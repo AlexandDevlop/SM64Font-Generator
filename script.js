@@ -7,47 +7,48 @@
   // Each font defines where its character images are located.
   // The user can add new fonts by placing images in assets/<fontId>/
   // and adding a new entry here.
-  const FONTS = [
-    {
-      id: "sm64",
-      name: "Super Mario 64",
-      basePath: "assets",
+  // Symbol file name mapping shared by all fonts
+  var SYMBOL_FILENAMES = {
+    ",": "comma.png",
+    "!": "exclamation.png",
+    "\u00a1": "exclamation\u00a1.png",
+    "(": "left parenthesis.png",
+    "%": "percent.png",
+    ".": "point.png",
+    "#": "pound sign.png",
+    "?": "question.png",
+    "\u00bf": "question\u00bf.png",
+    '"': "quotation marks.png",
+    ")": "right perenthesis.png",
+    "=": "same.png",
+  };
+
+  var SYMBOL_CHARS = [",", "!", "\u00a1", "(", "%", ".", "#", "?", "\u00bf", '"', ")", "="];
+  var UPPER_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ\u00d1".split("");
+  var LOWER_CHARS = "abcdefghijklmnopqrstuvwxyz\u00f1".split("");
+  var NUMBER_CHARS = "0123456789".split("");
+
+  function makeFontDef(id, name, basePath) {
+    return {
+      id: id,
+      name: name,
+      basePath: basePath,
       categories: {
-        mayus: {
-          path: "mayus",
-          chars: "ABCDEFGHIJKLMNOPQRSTUVWXYZ\u00d1".split(""),
-          fileNames: null, // uses char + ".png"
-        },
-        minus: {
-          path: "minus",
-          chars: "abcdefghijklmnopqrstuvwxyz\u00f1".split(""),
-          fileNames: null,
-        },
-        numbers: {
-          path: "numbers",
-          chars: "0123456789".split(""),
-          fileNames: null,
-        },
-        symbols: {
-          path: "symbols",
-          chars: [",", "!", "\u00a1", "(", "%", ".", "#", "?", "\u00bf", '"', ")", "="],
-          fileNames: {
-            ",": "comma.png",
-            "!": "exclamation.png",
-            "\u00a1": "exclamation\u00a1.png",
-            "(": "left parenthesis.png",
-            "%": "percent.png",
-            ".": "point.png",
-            "#": "pound sign.png",
-            "?": "question.png",
-            "\u00bf": "question\u00bf.png",
-            '"': "quotation marks.png",
-            ")": "right perenthesis.png",
-            "=": "same.png",
-          },
-        },
+        mayus: { path: "mayus", chars: UPPER_CHARS, fileNames: null },
+        minus: { path: "minus", chars: LOWER_CHARS, fileNames: null },
+        numbers: { path: "numbers", chars: NUMBER_CHARS, fileNames: null },
+        symbols: { path: "symbols", chars: SYMBOL_CHARS, fileNames: SYMBOL_FILENAMES },
       },
-    },
+    };
+  }
+
+  const FONTS = [
+    makeFontDef("sm64", "Super Mario 64 (Sprites)", "assets"),
+    makeFontDef("mario64", "Mario 64", "assets/mario64"),
+    makeFontDef("sm64hud", "SM64 HUD", "assets/sm64hud"),
+    makeFontDef("sm64text", "SM64 Text", "assets/sm64text"),
+    makeFontDef("supermario256", "Super Mario 256", "assets/supermario256"),
+    makeFontDef("typeface64", "Typeface Mario 64", "assets/typeface64"),
   ];
 
   // ── State ──
