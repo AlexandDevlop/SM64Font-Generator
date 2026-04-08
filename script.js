@@ -7,8 +7,8 @@
   // Each font defines where its character images are located.
   // The user can add new fonts by placing images in assets/<fontId>/
   // and adding a new entry here.
-  // Symbol file name mapping shared by all fonts
-  var SYMBOL_FILENAMES = {
+  // Symbol file name mapping for the original SM64 sprites (legacy names)
+  var SM64_SYMBOL_FILENAMES = {
     ",": "comma.png",
     "!": "exclamation.png",
     "\u00a1": "exclamation\u00a1.png",
@@ -23,27 +23,85 @@
     "=": "same.png",
   };
 
-  var SYMBOL_CHARS = [",", "!", "\u00a1", "(", "%", ".", "#", "?", "\u00bf", '"', ")", "="];
-  var UPPER_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ\u00d1".split("");
-  var LOWER_CHARS = "abcdefghijklmnopqrstuvwxyz\u00f1".split("");
+  // Symbol file name mapping for generated fonts (new naming convention)
+  var GEN_SYMBOL_FILENAMES = {
+    ",": "comma.png",
+    "!": "exclamation.png",
+    "\u00a1": "exclamation_inv.png",
+    "(": "left_parenthesis.png",
+    ")": "right_parenthesis.png",
+    "%": "percent.png",
+    ".": "point.png",
+    "#": "pound_sign.png",
+    "?": "question.png",
+    "\u00bf": "question_inv.png",
+    '"': "quotation_marks.png",
+    "=": "same.png",
+    "@": "at.png",
+    "&": "ampersand.png",
+    "+": "plus.png",
+    "*": "asterisk.png",
+    "-": "hyphen.png",
+    "_": "underscore.png",
+    "/": "slash.png",
+    "\\": "backslash.png",
+    ":": "colon.png",
+    ";": "semicolon.png",
+    "'": "apostrophe.png",
+    "<": "less_than.png",
+    ">": "greater_than.png",
+    "[": "left_bracket.png",
+    "]": "right_bracket.png",
+    "{": "left_brace.png",
+    "}": "right_brace.png",
+    "~": "tilde.png",
+    "^": "caret.png",
+    "`": "backtick.png",
+    "|": "pipe.png",
+    "$": "dollar.png",
+  };
+
+  // Character sets
+  var UPPER_BASIC = "ABCDEFGHIJKLMNOPQRSTUVWXYZ\u00d1".split("");
+  var UPPER_ACCENTED = "\u00c1\u00c9\u00cd\u00d3\u00da\u00c0\u00c8\u00cc\u00d2\u00d9\u00c4\u00cb\u00cf\u00d6\u00dc\u00c2\u00ca\u00ce\u00d4\u00db".split("");
+  var LOWER_BASIC = "abcdefghijklmnopqrstuvwxyz\u00f1".split("");
+  var LOWER_ACCENTED = "\u00e1\u00e9\u00ed\u00f3\u00fa\u00e0\u00e8\u00ec\u00f2\u00f9\u00e4\u00eb\u00ef\u00f6\u00fc\u00e2\u00ea\u00ee\u00f4\u00fb".split("");
   var NUMBER_CHARS = "0123456789".split("");
 
+  var SM64_SYMBOL_CHARS = [",", "!", "\u00a1", "(", "%", ".", "#", "?", "\u00bf", '"', ")", "="];
+  var GEN_SYMBOL_CHARS = [",", "!", "\u00a1", "(", ")", "%", ".", "#", "?", "\u00bf", '"', "=",
+    "@", "&", "+", "*", "-", "_", "/", "\\", ":", ";", "'", "<", ">", "[", "]", "{", "}", "~", "^", "`", "|", "$"];
+
+  // SM64 original sprites - basic charset only
+  var SM64_FONT = {
+    id: "sm64",
+    name: "Super Mario 64 (Sprites)",
+    basePath: "assets",
+    categories: {
+      mayus: { path: "mayus", chars: UPPER_BASIC, fileNames: null },
+      minus: { path: "minus", chars: LOWER_BASIC, fileNames: null },
+      numbers: { path: "numbers", chars: NUMBER_CHARS, fileNames: null },
+      symbols: { path: "symbols", chars: SM64_SYMBOL_CHARS, fileNames: SM64_SYMBOL_FILENAMES },
+    },
+  };
+
+  // Helper to create generated font definitions with extended charset
   function makeFontDef(id, name, basePath) {
     return {
       id: id,
       name: name,
       basePath: basePath,
       categories: {
-        mayus: { path: "mayus", chars: UPPER_CHARS, fileNames: null },
-        minus: { path: "minus", chars: LOWER_CHARS, fileNames: null },
+        mayus: { path: "mayus", chars: UPPER_BASIC.concat(UPPER_ACCENTED), fileNames: null },
+        minus: { path: "minus", chars: LOWER_BASIC.concat(LOWER_ACCENTED), fileNames: null },
         numbers: { path: "numbers", chars: NUMBER_CHARS, fileNames: null },
-        symbols: { path: "symbols", chars: SYMBOL_CHARS, fileNames: SYMBOL_FILENAMES },
+        symbols: { path: "symbols", chars: GEN_SYMBOL_CHARS, fileNames: GEN_SYMBOL_FILENAMES },
       },
     };
   }
 
   const FONTS = [
-    makeFontDef("sm64", "Super Mario 64 (Sprites)", "assets"),
+    SM64_FONT,
     makeFontDef("mario64", "Mario 64", "assets/mario64"),
     makeFontDef("sm64hud", "SM64 HUD", "assets/sm64hud"),
     makeFontDef("sm64text", "SM64 Text", "assets/sm64text"),
@@ -90,30 +148,25 @@
     });
   }
 
-  // ── Build Font Selector Buttons ──
+  // ── Build Font Selector (Dropdown) ──
   function buildFontSelector() {
     fontSelector.innerHTML = "";
     FONTS.forEach(function (font) {
-      var btn = document.createElement("button");
-      btn.className = "font-btn" + (font.id === currentFont.id ? " active" : "");
-      btn.textContent = font.name;
-      btn.setAttribute("data-font-id", font.id);
-      btn.addEventListener("click", function () {
-        selectFont(font);
-      });
-      fontSelector.appendChild(btn);
+      var option = document.createElement("option");
+      option.value = font.id;
+      option.textContent = font.name;
+      if (font.id === currentFont.id) {
+        option.selected = true;
+      }
+      fontSelector.appendChild(option);
     });
   }
 
   // ── Select Font ──
-  function selectFont(font) {
+  function selectFont(fontId) {
+    var font = FONTS.find(function (f) { return f.id === fontId; });
+    if (!font) return;
     currentFont = font;
-    document.querySelectorAll(".font-btn").forEach(function (b) {
-      b.classList.remove("active");
-    });
-    document
-      .querySelector('[data-font-id="' + font.id + '"]')
-      .classList.add("active");
     imagesLoaded = false;
     loadFontImages(font).then(function () {
       imagesLoaded = true;
@@ -167,7 +220,7 @@
         } else {
           fileName = char + ".png";
         }
-        var path = font.basePath + "/" + cat.path + "/" + fileName;
+        var path = font.basePath + "/" + cat.path + "/" + encodeURIComponent(fileName);
 
         var p = new Promise(function (resolve) {
           var img = new Image();
@@ -349,6 +402,11 @@
   function bindEvents() {
     textInput.addEventListener("input", function () {
       renderPreview();
+    });
+
+    // Font dropdown change
+    fontSelector.addEventListener("change", function () {
+      selectFont(this.value);
     });
 
     sizeSlider.addEventListener("input", function () {
