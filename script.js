@@ -53,6 +53,7 @@
   // ── State ──
   let currentFont = FONTS[0];
   let charImages = {};
+  let charBounds = {};
   let fontSize = 64;
   let spacing = 2;
   let lineHeightMultiplier = 1.5;
@@ -120,9 +121,40 @@
     });
   }
 
+  // ── Compute Tight Bounding Box ──
+  // Scans the image pixels to find the actual content bounds,
+  // trimming transparent padding around character sprites.
+  function computeTightBounds(img) {
+    var tmpCanvas = document.createElement("canvas");
+    tmpCanvas.width = img.naturalWidth;
+    tmpCanvas.height = img.naturalHeight;
+    var tmpCtx = tmpCanvas.getContext("2d");
+    tmpCtx.drawImage(img, 0, 0);
+    var data = tmpCtx.getImageData(0, 0, tmpCanvas.width, tmpCanvas.height).data;
+    var w = tmpCanvas.width;
+    var h = tmpCanvas.height;
+    var minX = w, maxX = 0, minY = h, maxY = 0;
+    for (var y = 0; y < h; y++) {
+      for (var x = 0; x < w; x++) {
+        var alpha = data[(y * w + x) * 4 + 3];
+        if (alpha > 10) {
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
+      }
+    }
+    if (minX > maxX || minY > maxY) {
+      return { x: 0, y: 0, w: w, h: h };
+    }
+    return { x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1 };
+  }
+
   // ── Load Font Images ──
   function loadFontImages(font) {
     charImages = {};
+    charBounds = {};
     var promises = [];
 
     Object.keys(font.categories).forEach(function (catKey) {
@@ -140,6 +172,7 @@
           var img = new Image();
           img.onload = function () {
             charImages[char] = img;
+            charBounds[char] = computeTightBounds(img);
             resolve();
           };
           img.onerror = function () {
@@ -180,10 +213,10 @@
         var char = line[i];
         if (char === " ") {
           width += fontSize * 0.5;
-        } else if (charImages[char]) {
-          var img = charImages[char];
-          var scale = fontSize / img.naturalHeight;
-          width += img.naturalWidth * scale + spacing;
+        } else if (charImages[char] && charBounds[char]) {
+          var bounds = charBounds[char];
+          var scale = fontSize / charImages[char].naturalHeight;
+          width += bounds.w * scale + spacing;
         }
       }
       if (width > 0) width -= spacing; // Remove trailing spacing
@@ -224,12 +257,19 @@
         var char = line[i];
         if (char === " ") {
           x += fontSize * 0.5;
-        } else if (charImages[char]) {
+        } else if (charImages[char] && charBounds[char]) {
           var img = charImages[char];
+          var bounds = charBounds[char];
           var scale = fontSize / img.naturalHeight;
-          var drawWidth = img.naturalWidth * scale;
-          var drawHeight = fontSize;
-          ctx.drawImage(img, x, y, drawWidth, drawHeight);
+          var drawWidth = bounds.w * scale;
+          var drawHeight = bounds.h * scale;
+          var drawY = y + bounds.y * scale;
+          // Draw only the trimmed portion of the image
+          ctx.drawImage(
+            img,
+            bounds.x, bounds.y, bounds.w, bounds.h,
+            x, drawY, drawWidth, drawHeight
+          );
           x += drawWidth + spacing;
         }
       }
