@@ -220,7 +220,7 @@
         } else {
           fileName = char + ".png";
         }
-        var path = font.basePath + "/" + cat.path + "/" + encodeURIComponent(fileName);
+        var path = font.basePath + "/" + cat.path + "/" + fileName;
 
         var p = new Promise(function (resolve) {
           var img = new Image();
