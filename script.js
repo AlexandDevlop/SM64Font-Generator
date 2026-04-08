@@ -354,12 +354,12 @@
   // ── Update Preview Background ──
   function updatePreviewBg() {
     if (bgColor === "transparent") {
-      previewContainer.style.backgroundColor = "#111125";
+      previewContainer.style.backgroundColor = "#484848";
       previewContainer.style.backgroundImage = [
-        "linear-gradient(45deg, #1a1a30 25%, transparent 25%)",
-        "linear-gradient(-45deg, #1a1a30 25%, transparent 25%)",
-        "linear-gradient(45deg, transparent 75%, #1a1a30 75%)",
-        "linear-gradient(-45deg, transparent 75%, #1a1a30 75%)",
+        "linear-gradient(45deg, #505050 25%, transparent 25%)",
+        "linear-gradient(-45deg, #505050 25%, transparent 25%)",
+        "linear-gradient(45deg, transparent 75%, #505050 75%)",
+        "linear-gradient(-45deg, transparent 75%, #505050 75%)",
       ].join(",");
     } else {
       previewContainer.style.backgroundColor = bgColor;
