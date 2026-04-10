@@ -1,5 +1,6 @@
 (function () {
   "use strict";
+ 
   // ── Font Definitions ──
   // Each font defines where its character images are located.
   // The user can add new fonts by placing images in assets/<fontId>/
@@ -19,6 +20,7 @@
     ")": "right perenthesis.png",
     "=": "same.png",
   };
+ 
   // Symbol file name mapping for generated fonts (new naming convention)
   var GEN_SYMBOL_FILENAMES = {
     ",": "comma.png",
@@ -56,6 +58,7 @@
     "|": "pipe.png",
     "$": "dollar.png",
   };
+ 
   // Accented character filename mappings (ASCII-safe for static hosting)
   var UPPER_ACCENT_FILENAMES = {
     "\u00c1": "A_acute.png", "\u00c9": "E_acute.png", "\u00cd": "I_acute.png", "\u00d3": "O_acute.png", "\u00da": "U_acute.png",
@@ -71,6 +74,7 @@
     "\u00e2": "a_circumflex.png", "\u00ea": "e_circumflex.png", "\u00ee": "i_circumflex.png", "\u00f4": "o_circumflex.png", "\u00fb": "u_circumflex.png",
     "\u00f1": "n_tilde.png",
   };
+ 
   // Character sets
   var UPPER_BASIC = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
   var UPPER_NTILDE = ["\u00d1"];
@@ -79,9 +83,11 @@
   var LOWER_NTILDE = ["\u00f1"];
   var LOWER_ACCENTED = "\u00e1\u00e9\u00ed\u00f3\u00fa\u00e0\u00e8\u00ec\u00f2\u00f9\u00e4\u00eb\u00ef\u00f6\u00fc\u00e2\u00ea\u00ee\u00f4\u00fb".split("");
   var NUMBER_CHARS = "0123456789".split("");
+ 
   var SM64_SYMBOL_CHARS = [",", "!", "\u00a1", "(", "%", ".", "#", "?", "\u00bf", '"', ")", "="];
   var GEN_SYMBOL_CHARS = [",", "!", "\u00a1", "(", ")", "%", ".", "#", "?", "\u00bf", '"', "=",
     "@", "&", "+", "*", "-", "_", "/", "\\", ":", ";", "'", "<", ">", "[", "]", "{", "}", "~", "^", "`", "|", "$"];
+ 
   // SM64 original sprites - basic charset + Ñ/ñ only
   var SM64_FONT = {
     id: "sm64",
@@ -94,6 +100,7 @@
       symbols: { path: "symbols", chars: SM64_SYMBOL_CHARS, fileNames: SM64_SYMBOL_FILENAMES },
     },
   };
+ 
   // Helper to create generated font definitions with extended charset
   function makeFontDef(id, name, basePath) {
     return {
@@ -108,6 +115,7 @@
       },
     };
   }
+ 
   const FONTS = [
     SM64_FONT,
     makeFontDef("mario64", "Mario 64", "assets/mario64"),
@@ -116,6 +124,7 @@
     makeFontDef("supermario256", "Super Mario 256", "assets/supermario256"),
     makeFontDef("typeface64", "Typeface Mario 64", "assets/typeface64"),
   ];
+ 
   // ── State ──
   let currentFont = FONTS[0];
   let charImages = {};
@@ -126,6 +135,7 @@
   let bgColor = "transparent";
   let textAlign = "left";
   let imagesLoaded = false;
+ 
   // ── DOM Elements ──
   const textInput = document.getElementById("text-input");
   const fontSelector = document.getElementById("font-selector");
@@ -142,6 +152,7 @@
   const charCountEl = document.getElementById("char-count");
   const previewContainer = document.getElementById("preview-container");
   const customBgColor = document.getElementById("custom-bg-color");
+ 
   // ── Initialize ──
   function init() {
     buildFontSelector();
@@ -152,6 +163,7 @@
       buildCharmap();
     });
   }
+ 
   // ── Build Font Selector (Dropdown) ──
   function buildFontSelector() {
     fontSelector.innerHTML = "";
@@ -165,6 +177,7 @@
       fontSelector.appendChild(option);
     });
   }
+ 
   // ── Select Font ──
   function selectFont(fontId) {
     var font = FONTS.find(function (f) { return f.id === fontId; });
@@ -177,6 +190,7 @@
       buildCharmap();
     });
   }
+ 
   // ── Compute Tight Bounding Box ──
   // Scans the image pixels to find the actual content bounds,
   // trimming transparent padding around character sprites.
@@ -206,11 +220,13 @@
     }
     return { x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1 };
   }
+ 
   // ── Load Font Images ──
   function loadFontImages(font) {
     charImages = {};
     charBounds = {};
     var promises = [];
+ 
     Object.keys(font.categories).forEach(function (catKey) {
       var cat = font.categories[catKey];
       cat.chars.forEach(function (char) {
@@ -221,6 +237,7 @@
           fileName = char + ".png";
         }
         var path = font.basePath + "/" + cat.path + "/" + fileName;
+ 
         var p = new Promise(function (resolve) {
           var img = new Image();
           img.onload = function () {
@@ -237,11 +254,14 @@
         promises.push(p);
       });
     });
+ 
     return Promise.all(promises);
   }
+ 
   // ── Render Preview ──
   function renderPreview() {
     if (!imagesLoaded) return;
+ 
     var text = textInput.value;
     if (!text) {
       canvas.width = 1;
@@ -249,11 +269,14 @@
       ctx.clearRect(0, 0, 1, 1);
       return;
     }
+ 
     var lines = text.split("\n");
     var lineHeight = Math.round(fontSize * lineHeightMultiplier);
+ 
     // Calculate dimensions for each line
     var lineWidths = [];
     var maxWidth = 0;
+ 
     lines.forEach(function (line) {
       var width = 0;
       for (var i = 0; i < line.length; i++) {
@@ -270,10 +293,13 @@
       lineWidths.push(width);
       if (width > maxWidth) maxWidth = width;
     });
+ 
     var totalHeight = lines.length * lineHeight;
     var padding = 20;
+ 
     canvas.width = Math.max(maxWidth + padding * 2, 1);
     canvas.height = Math.max(totalHeight + padding * 2, 1);
+ 
     // Draw background
     if (bgColor === "transparent") {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -281,10 +307,12 @@
       ctx.fillStyle = bgColor;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
+ 
     // Draw each line
     lines.forEach(function (line, lineIndex) {
       var lineWidth = lineWidths[lineIndex];
       var x;
+ 
       if (textAlign === "center") {
         x = padding + (maxWidth - lineWidth) / 2;
       } else if (textAlign === "right") {
@@ -292,7 +320,9 @@
       } else {
         x = padding;
       }
+ 
       var y = padding + lineIndex * lineHeight;
+ 
       for (var i = 0; i < line.length; i++) {
         var char = line[i];
         if (char === " ") {
@@ -314,9 +344,11 @@
         }
       }
     });
+ 
     // Update checkerboard bg for preview container
     updatePreviewBg();
   }
+ 
   // ── Update Preview Background ──
   function updatePreviewBg() {
     if (bgColor === "transparent") {
@@ -332,23 +364,28 @@
       previewContainer.style.backgroundImage = "none";
     }
   }
+ 
   // ── Build Character Map ──
   function buildCharmap() {
     charmapContainer.innerHTML = "";
     var count = 0;
+ 
     Object.keys(charImages).forEach(function (char) {
       var img = charImages[char];
       var item = document.createElement("div");
       item.className = "charmap-item";
       item.title = char;
+ 
       var imgEl = document.createElement("img");
       imgEl.src = img.src;
       imgEl.alt = char;
       item.appendChild(imgEl);
+ 
       var label = document.createElement("span");
       label.className = "char-label";
       label.textContent = char;
       item.appendChild(label);
+ 
       item.addEventListener("click", function () {
         // Insert character into text input
         var start = textInput.selectionStart;
@@ -359,44 +396,55 @@
         textInput.selectionStart = textInput.selectionEnd = start + char.length;
         renderPreview();
       });
+ 
       charmapContainer.appendChild(item);
       count++;
     });
+ 
     charCountEl.textContent = count + " caracteres";
   }
+ 
   // ── Download as PNG ──
   function downloadPNG() {
     if (canvas.width <= 1 || canvas.height <= 1) return;
+ 
     var link = document.createElement("a");
     link.download = "sm64-text.png";
     link.href = canvas.toDataURL("image/png");
     link.click();
   }
+ 
   // ── Bind Events ──
   function bindEvents() {
     textInput.addEventListener("input", function () {
       renderPreview();
     });
+ 
     // Font dropdown change
     fontSelector.addEventListener("change", function () {
       selectFont(this.value);
     });
+ 
     sizeSlider.addEventListener("input", function () {
       fontSize = parseInt(this.value);
       sizeValue.textContent = fontSize;
       renderPreview();
     });
+ 
     spacingSlider.addEventListener("input", function () {
       spacing = parseInt(this.value);
       spacingValue.textContent = spacing;
       renderPreview();
     });
+ 
     lineHeightSlider.addEventListener("input", function () {
       lineHeightMultiplier = parseInt(this.value) / 10;
       lineHeightValue.textContent = lineHeightMultiplier.toFixed(1);
       renderPreview();
     });
+ 
     downloadBtn.addEventListener("click", downloadPNG);
+ 
     // Background color buttons
     document.querySelectorAll(".bg-btn").forEach(function (btn) {
       btn.addEventListener("click", function () {
@@ -415,6 +463,7 @@
         renderPreview();
       });
     });
+ 
     customBgColor.addEventListener("input", function () {
       var customBtn = document.querySelector('[data-bg="custom"]');
       document
@@ -426,6 +475,7 @@
       bgColor = this.value;
       renderPreview();
     });
+ 
     // Alignment buttons
     document.querySelectorAll(".align-btn").forEach(function (btn) {
       btn.addEventListener("click", function () {
@@ -440,6 +490,7 @@
       });
     });
   }
+ 
   // Start
   init();
 })();
